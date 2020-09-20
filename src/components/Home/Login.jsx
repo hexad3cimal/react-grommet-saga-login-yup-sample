@@ -16,9 +16,15 @@ const Wrapper = styled.div`
   flex-direction: row;
 `;
 const LoginComponent = () => {
-  const [values, setValues] = useState({ email: null, password: null });
+  const [values, setValues] = useState({
+    email: null,
+    password: null,
+    orgcode: null,
+    orgname: null,
+  });
   const [errors, setErrors] = useState({});
   const [register, setRegister] = useState(false);
+  const [registerType, setRegisterType] = useState(null);
   const user = useSelector(state => state.user);
   const dispatch = useDispatch();
   const schema = object().shape({
@@ -64,13 +70,19 @@ const LoginComponent = () => {
     ) : (
       <Box direction="row-responsive" animation="fadeIn" width="large" justify="center" wrap={true}>
         <Wrapper>
-          <Box justify="center" style={{ width: '100%' }} direction="row-responsive">
-            <Text size="small" style={{lineHeight: '4rem'}} color="brand" weight="bold" textAlign="center">
-              is account for a
+          <Box justify="center" style={{ width: '100%' }}  direction="row-responsive">
+            <Text
+              size="small"
+              style={{ lineHeight: '4rem' }}
+              color="brand"
+              weight="bold"
+              textAlign="center"
+            >
+              is account for an
             </Text>
             <Button
               onClick={() => {
-                submitRegisterForm();
+                setRegisterType('org');
               }}
               margin={{ horizontal: 'small', vertical: 'small' }}
             >
@@ -84,12 +96,20 @@ const LoginComponent = () => {
                 </Text>
               </Box>
             </Button>
+            <Text
+              size="small"
+              style={{ lineHeight: '4rem' }}
+              color="brand"
+              weight="bold"
+              textAlign="center"
+            >
+              or a
+            </Text>
             <Button
-              disabled={Object.keys(errors).length > 0}
               onClick={() => {
-                submitRegisterForm();
+                setRegisterType('user');
               }}
-              margin={{ horizontal: 'small' , vertical: 'small'}}
+              margin={{ horizontal: 'small', vertical: 'small' }}
             >
               <Box
                 round="xlarge"
@@ -102,11 +122,12 @@ const LoginComponent = () => {
               </Box>
             </Button>
           </Box>
-          <Box justify="center" direction="row-responsive">
+          <Box justify="center" wrap={true} direction="row-responsive">
             <FormField label="email" style={{ margin: '1rem' }} error={errors.email}>
               <TextInput
                 plain
                 name="email"
+                disabled={!registerType}
                 placeholder={<Text size="medium">email@gmail.com</Text>}
                 value={values.email}
                 onChange={handleChange}
@@ -115,6 +136,7 @@ const LoginComponent = () => {
 
             <FormField label="password" style={{ margin: '1rem' }} error={errors.password}>
               <TextInput
+                disabled={!registerType}
                 plain
                 type="password"
                 name="password"
@@ -123,6 +145,30 @@ const LoginComponent = () => {
                 onChange={handleChange}
               />
             </FormField>
+            <Box style={{ width: '100%' }}>
+              {registerType === 'user' ? (
+                <FormField label="org code" style={{ margin: '1rem' }} error={errors.orgname}>
+                  <TextInput
+                    plain
+                    name="orgname"
+                    placeholder={<Text size="medium">google inc</Text>}
+                    value={values.orgname}
+                    onChange={handleChange}
+                  />
+                </FormField>
+              ) : null}
+              {registerType === 'org' ? (
+                <FormField label="org name" style={{ margin: '1rem' }} error={errors.orgcode}>
+                  <TextInput
+                    plain
+                    name="orgcode"
+                    placeholder={<Text size="medium">ask your org admin</Text>}
+                    value={values.orgcode}
+                    onChange={handleChange}
+                  />
+                </FormField>
+              ) : null}
+            </Box>
             <Button
               disabled={Object.keys(errors).length > 0}
               onClick={() => {
