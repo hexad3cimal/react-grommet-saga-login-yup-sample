@@ -17,6 +17,9 @@ export const ActionTypes = keyMirror({
   USER_LOGOUT: undefined,
   USER_LOGOUT_SUCCESS: undefined,
   USER_LOGOUT_FAILURE: undefined,
+  USER_REGISTER: undefined,
+  USER_REGISTER_SUCCESS: undefined,
+  USER_REGISTER_FAILURE: undefined,
   SHOW_ALERT: undefined,
   HIDE_ALERT: undefined,
 });

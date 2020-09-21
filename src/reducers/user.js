@@ -22,7 +22,7 @@ export default {
       [ActionTypes.USER_LOGIN_SUCCESS]: (draft, { payload }) => {
         draft.isAuthenticated = true;
         draft.status = STATUS.READY;
-        draft.usage = payload;
+        draft.data.user = payload;
       },
       [ActionTypes.USER_LOGOUT]: draft => {
         draft.status = STATUS.RUNNING;
@@ -30,6 +30,17 @@ export default {
       [ActionTypes.USER_LOGOUT_SUCCESS]: draft => {
         draft.isAuthenticated = false;
         draft.status = STATUS.IDLE;
+      },
+      [ActionTypes.USER_REGISTER]: draft => {
+        draft.status = STATUS.RUNNING;
+      },
+      [ActionTypes.USER_REGISTER_FAILURE]: (draft, { payload }) => {
+        draft.status = STATUS.ERROR;
+        draft.error = payload;
+      },
+      [ActionTypes.USER_REGISTER_SUCCESS]: draft => {
+        draft.status = STATUS.READY;
+        draft.data.registration = 'success';
       },
     },
     userState,

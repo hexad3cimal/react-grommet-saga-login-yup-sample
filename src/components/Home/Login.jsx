@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { Box, Button, FormField, Text, TextInput } from 'grommet';
 import { useDispatch, useSelector } from 'react-redux';
-import { string, object } from 'yup';
+import { string, object, boolean } from 'yup';
 import styled from 'styled-components';
-import { login } from '../../actions';
+import { login, register as registerAction } from '../../actions';
 import Loader from '../Loader';
 import Toast from '../../modules/toast';
 
@@ -19,23 +19,42 @@ const LoginComponent = () => {
   const [values, setValues] = useState({
     email: null,
     password: null,
-    orgcode: null,
-    orgname: null,
+    orgCode: '',
+    orgName: '',
+    registration: false,
   });
   const [errors, setErrors] = useState({});
-  const [register, setRegister] = useState(false);
   const [registerType, setRegisterType] = useState(null);
   const user = useSelector(state => state.user);
   const dispatch = useDispatch();
-  const schema = object().shape({
-    email: string('Please enter a valid email')
-      .email('Please enter a valid email')
-      .required('email is required'),
-    password: string('password is required').required('password is required'),
-  });
+  const schema = object()
+    .shape({
+      email: string('Please enter a valid email')
+        .email('Please enter a valid email')
+        .required('email is required'),
+      org: boolean(),
+      orgCode: string().when(['user'], {
+        is: true,
+        then: string().required(),
+      }),
+      orgName: string().when(['org'], {
+        is: true,
+        then: string().required(),
+      }),
+      password: string('password is required').required('password is required'),
+      registration: boolean(),
+      user: boolean(),
+    })
+    .test('global-ok', 'The data is not correct', value => {
+      console.log(value);
+      if (value.registration) return value.orgName.length > 1 || value.orgCode.length > 1;
+      return true;
+    });
   const handleChange = event => {
     const { target } = event;
     const { name, value } = target;
+    values.user = name === 'orgCode';
+    values.org = name === 'orgName';
     event.persist();
     schema
       .validate({ ...values, [name]: value })
@@ -53,24 +72,24 @@ const LoginComponent = () => {
   };
 
   const signUpClick = () => {
-    setRegister(true);
+    setValues({ ...values, registration: true });
   };
 
   const submitRegisterForm = () => {
-    dispatch(login(values));
+    dispatch(registerAction(values));
   };
 
   if (user.status === 'exception') {
     Toast({ message: user.error.message });
   }
 
-  if (register === true) {
+  if (values.registration === true) {
     return user.status === 'loading' ? (
       <Loader />
     ) : (
       <Box direction="row-responsive" animation="fadeIn" width="large" justify="center" wrap={true}>
         <Wrapper>
-          <Box justify="center" style={{ width: '100%' }}  direction="row-responsive">
+          <Box justify="center" style={{ width: '100%' }} direction="row-responsive">
             <Text
               size="small"
               style={{ lineHeight: '4rem' }}
@@ -78,7 +97,7 @@ const LoginComponent = () => {
               weight="bold"
               textAlign="center"
             >
-              is account for an
+              is this account for an
             </Text>
             <Button
               onClick={() => {
@@ -145,32 +164,49 @@ const LoginComponent = () => {
                 onChange={handleChange}
               />
             </FormField>
-            <Box style={{ width: '100%' }}>
-              {registerType === 'user' ? (
-                <FormField label="org code" style={{ margin: '1rem' }} error={errors.orgname}>
+            <Box style={{ width: registerType ? '50%' : '100%' }}>
+              <FormField label="full name" style={{ margin: '1rem' }} error={errors.fullName}>
+                <TextInput
+                  plain
+                  name="fullName"
+                  placeholder={<Text size="medium">your full-name</Text>}
+                  value={values.fullName}
+                  onChange={handleChange}
+                />
+              </FormField>
+            </Box>
+            <Box style={{ width: '50%' }}>
+              {registerType === 'org' ? (
+                <FormField label="org name" style={{ margin: '1rem' }} error={errors.orgName}>
                   <TextInput
                     plain
-                    name="orgname"
+                    name="orgName"
                     placeholder={<Text size="medium">google inc</Text>}
-                    value={values.orgname}
+                    value={values.orgName}
                     onChange={handleChange}
                   />
                 </FormField>
               ) : null}
-              {registerType === 'org' ? (
-                <FormField label="org name" style={{ margin: '1rem' }} error={errors.orgcode}>
+              {registerType === 'user' ? (
+                <FormField label="org code" style={{ margin: '1rem' }} error={errors.orgCode}>
                   <TextInput
                     plain
-                    name="orgcode"
+                    name="orgCode"
                     placeholder={<Text size="medium">ask your org admin</Text>}
-                    value={values.orgcode}
+                    value={values.orgCode}
                     onChange={handleChange}
                   />
                 </FormField>
               ) : null}
             </Box>
             <Button
-              disabled={Object.keys(errors).length > 0}
+              disabled={
+                Object.keys(errors).length > 0 ||
+                !(
+                  (registerType === 'user' && values.orgCode.length > 1) ||
+                  (registerType === 'org' && values.orgName.length > 1)
+                )
+              }
               onClick={() => {
                 submitRegisterForm();
               }}

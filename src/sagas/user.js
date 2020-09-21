@@ -31,6 +31,45 @@ export function* login({ payload }) {
   }
 }
 
+const cleanUpRegistrationObject = registrationObject => {
+  delete registrationObject.user;
+  delete registrationObject.registration;
+  if (registrationObject.org) {
+    delete registrationObject.orgCode;
+  } else {
+    delete registrationObject.orgName;
+  }
+  delete registrationObject.org;
+
+  return registrationObject;
+};
+/**
+ * Login
+ */
+export function* register({ payload }) {
+  try {
+    const url = payload.org
+      ? 'http://localhost:8848/v1/api/org'
+      : 'http://localhost:8848/v1/api/user';
+    payload = cleanUpRegistrationObject(payload);
+    const user = yield request(url, {
+      method: 'POST',
+      payload,
+    });
+
+    yield put({
+      type: ActionTypes.USER_REGISTER_SUCCESS,
+      payload: user.json(),
+    });
+  } catch (err) {
+    /* istanbul ignore next */
+    yield put({
+      type: ActionTypes.USER_REGISTER_FAILURE,
+      payload: err,
+    });
+  }
+}
+
 /**
  * Logout
  */
@@ -57,5 +96,6 @@ export default function* root() {
   yield all([
     takeLatest(ActionTypes.USER_LOGIN, login),
     takeLatest(ActionTypes.USER_LOGOUT, logout),
+    takeLatest(ActionTypes.USER_REGISTER, register),
   ]);
 }
