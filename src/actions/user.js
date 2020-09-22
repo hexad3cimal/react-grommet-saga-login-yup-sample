@@ -5,7 +5,7 @@
  */
 import { createActions } from 'redux-actions';
 
-import { ActionTypes } from 'constants/index';
+import { ActionTypes } from '../constants/index';
 
 export const { userLogin: login, userLogout: logOut, userRegister: register } = createActions({
   [ActionTypes.USER_LOGIN]: ({ email, password }) => ({ email, password }),

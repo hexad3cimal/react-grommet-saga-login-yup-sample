@@ -24,10 +24,15 @@ export function* login({ payload }) {
     });
   } catch (err) {
     /* istanbul ignore next */
-    yield put({
-      type: ActionTypes.USER_LOGIN_FAILURE,
-      payload: err,
-    });
+    yield all([
+      put({
+        type: ActionTypes.USER_LOGIN_FAILURE,
+        payload: err,
+      }),
+      put({
+        type: ActionTypes.SHOW_ALERT,
+      }),
+    ]);
   }
 }
 

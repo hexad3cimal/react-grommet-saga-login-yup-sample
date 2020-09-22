@@ -3,7 +3,7 @@ import { Box, Button, FormField, Text, TextInput } from 'grommet';
 import { useDispatch, useSelector } from 'react-redux';
 import { string, object, boolean } from 'yup';
 import styled from 'styled-components';
-import { login, register as registerAction } from '../../actions';
+import { login, register as registerAction, hideAlert } from '../../actions';
 import Loader from '../Loader';
 import Toast from '../../modules/toast';
 
@@ -26,6 +26,7 @@ const LoginComponent = () => {
   const [errors, setErrors] = useState({});
   const [registerType, setRegisterType] = useState(null);
   const user = useSelector(state => state.user);
+  const appState = useSelector(state => state.app);
   const dispatch = useDispatch();
   const schema = object()
     .shape({
@@ -46,7 +47,6 @@ const LoginComponent = () => {
       user: boolean(),
     })
     .test('global-ok', 'The data is not correct', value => {
-      console.log(value);
       if (value.registration) return value.orgName.length > 1 || value.orgCode.length > 1;
       return true;
     });
@@ -79,8 +79,16 @@ const LoginComponent = () => {
     dispatch(registerAction(values));
   };
 
-  if (user.status === 'exception') {
+  if (appState.showAlert === true) {
+    setValues({
+      email: null,
+      password: null,
+      orgCode: '',
+      orgName: '',
+      registration: false,
+    });
     Toast({ message: user.error.message });
+    dispatch(hideAlert());
   }
 
   if (values.registration === true) {
