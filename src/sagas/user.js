@@ -13,14 +13,14 @@ import { request } from '../modules/client';
  */
 export function* login({ payload }) {
   try {
-    const user = yield request('http://localhost:8848/v1/api/auth/_', {
+    const user = yield request(window.geoConfig.api + 'auth/_', {
       method: 'POST',
       payload,
     });
 
     yield put({
       type: ActionTypes.USER_LOGIN_SUCCESS,
-      payload: user.json(),
+      payload: user,
     });
   } catch (err) {
     /* istanbul ignore next */
@@ -31,6 +31,7 @@ export function* login({ payload }) {
       }),
       put({
         type: ActionTypes.SHOW_ALERT,
+        payload: 'Login failed,please retry'
       }),
     ]);
   }
@@ -53,25 +54,36 @@ const cleanUpRegistrationObject = registrationObject => {
  */
 export function* register({ payload }) {
   try {
-    const url = payload.org
-      ? 'http://localhost:8848/v1/api/org'
-      : 'http://localhost:8848/v1/api/user';
+    const url = payload.orgName
+      ? window.geoConfig.api + 'org'
+      : window.geoConfig.api + 'user';
     payload = cleanUpRegistrationObject(payload);
-    const user = yield request(url, {
+    yield request(url, {
       method: 'POST',
       payload,
     });
 
-    yield put({
-      type: ActionTypes.USER_REGISTER_SUCCESS,
-      payload: user.json(),
-    });
+    yield all([
+      put({
+        type: ActionTypes.USER_REGISTER_SUCCESS,
+      }),
+      put({
+        type: ActionTypes.SHOW_ALERT,
+        payload: 'Successfully registered'
+      }),
+    ]);
   } catch (err) {
     /* istanbul ignore next */
-    yield put({
-      type: ActionTypes.USER_REGISTER_FAILURE,
-      payload: err,
-    });
+    yield all([
+      put({
+        type: ActionTypes.USER_REGISTER_FAILURE,
+        payload: err,
+      }),
+      put({
+        type: ActionTypes.SHOW_ALERT,
+        payload: 'Error while registering, please retry'
+      }),
+    ]);
   }
 }
 

@@ -4,6 +4,7 @@ import { STATUS, ActionTypes } from '../constants/index';
 
 export const userState = {
   isAuthenticated: false,
+  registered: false,
   status: STATUS.IDLE,
   error: null,
   data: {},
@@ -40,7 +41,7 @@ export default {
       },
       [ActionTypes.USER_REGISTER_SUCCESS]: draft => {
         draft.status = STATUS.READY;
-        draft.data.registration = 'success';
+        draft.registered = true;
       },
     },
     userState,

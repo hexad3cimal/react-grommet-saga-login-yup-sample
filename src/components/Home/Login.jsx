@@ -6,6 +6,7 @@ import styled from 'styled-components';
 import { login, register as registerAction, hideAlert } from '../../actions';
 import Loader from '../Loader';
 import Toast from '../../modules/toast';
+import { request } from '../../modules/client';
 
 const Wrapper = styled.div`
   display: flex;
@@ -32,7 +33,16 @@ const LoginComponent = () => {
     .shape({
       email: string('Please enter a valid email')
         .email('Please enter a valid email')
-        .required('email is required'),
+        .required('email is required')
+        .test('is-validemail', '${path} is in use', async function(value) {
+          if (this.parent.registration) {
+            const result = await request(`${window.geoConfig.api}users/email?email=${value}`)
+              .then(json => json.status)
+              .catch(() => false);
+            return result;
+          }
+          return true;
+        }),
       org: boolean(),
       orgCode: string().when(['user'], {
         is: true,
@@ -79,7 +89,8 @@ const LoginComponent = () => {
     dispatch(registerAction(values));
   };
 
-  if (appState.showAlert === true) {
+  if (appState.alert.show === true) {
+    Toast({ message: appState.alert.message });
     setValues({
       email: null,
       password: null,
@@ -87,7 +98,6 @@ const LoginComponent = () => {
       orgName: '',
       registration: false,
     });
-    Toast({ message: user.error.message });
     dispatch(hideAlert());
   }
 
