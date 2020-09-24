@@ -4,8 +4,8 @@
  */
 
 const config = {
-  name: 'GeoFence',
-  description: 'Geofence it',
+  name: 'react grommet saga',
+  description: 'react grommet saga',
 };
 
 export default config;
